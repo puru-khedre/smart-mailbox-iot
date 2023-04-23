@@ -1,15 +1,28 @@
-const express = require("express")
+const express = require("express");
+const getAllData = require("./db/getAllData");
+const setData = require("./db/setData");
 const app = express();
-let count=0;
+let count = 1;
 
-app.get("/api/ping", (req,res)=>{
-    let {path, ip} = req;
-    console.log(count, ". ", path, ip);
-    count++;
-    res.json({success: true});
-})
+app.use(express.static(__dirname + "/static"));
 
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/index.html");
+});
 
-app.listen(3000, ()=>{
-    console.log("server started")
-})
+app.get("/api/ping", (req, res) => {
+  let { path, ip, originalUrl } = req;
+  console.log(count, ". ", path, ip, originalUrl);
+  count++;
+  setData();
+  res.json({ success: true });
+});
+
+app.get("/api/data", (req, res) => {
+  const data = getAllData();
+  res.json(data);
+});
+
+app.listen(3000, () => {
+  console.log("server started");
+});
