@@ -1,24 +1,33 @@
+var socket = io();
+
 const ctx = document.getElementById("chart");
 const tableHeader = `<div class="header"><strong>Title</strong><strong>Time</strong></div>`;
 const list = document.querySelector("#list");
 let count = 0;
 let labels = [];
 let dataForDays = [];
-let data;
 let chart;
 let titles = [];
 
-getData().then(() => {
+getData().then((data) => {
   drawTotalGraph();
   makeTable(data);
 });
 
-setInterval(() => {
-  getData().then(() => {
-    chartUpdate(chart);
-    makeTable(data);
-  });
-}, 1000);
+socket.on("mail-received", (data) => {
+  labels = Object.keys(data).slice(-7);
+  dataForDays = labels.map((date) => data[date].length);
+
+  chartUpdate(chart);
+  makeTable(data);
+});
+
+// setInterval(() => {
+//   getData().then(() => {
+//     chartUpdate(chart);
+//     makeTable(data);
+//   });
+// }, 1000);
 
 function drawTotalGraph() {
   chart = new Chart(ctx, {
@@ -61,10 +70,12 @@ function chartUpdate(chart) {
 }
 async function getData() {
   const res = await fetch("/api/data");
-  data = await res.json();
+  const data = await res.json();
 
   labels = Object.keys(data).slice(-7);
   dataForDays = labels.map((date) => data[date].length);
+
+  return data;
 }
 
 async function getTitles() {
